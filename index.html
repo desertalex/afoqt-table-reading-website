@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFOQT Table Reading Practice</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="start-section">
+            <button id="start-button">Start Test</button>
+        </div>
+
+        <div id="test-section" class="hidden">
+            <div class="left-panel">
+                <div class="timer">Time Left: <span id="time">7:00</span></div>
+                <div class="table-container">
+                    <table id="data-table">
+                        <thead>
+                            <tr>
+                                <th colspan="2"></th>
+                                <th id="x-axis-label" colspan="41">X-Axis</th>
+                            </tr>
+                            <tr id="x-axis-header">
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div id="question-container">
+                    <p id="question-text"></p>
+                    <div class="options">
+                        <label><input type="radio" name="answer" value="a"> a) <span id="option-a"></span></label><br>
+                        <label><input type="radio" name="answer" value="b"> b) <span id="option-b"></span></label><br>
+                        <label><input type="radio" name="answer" value="c"> c) <span id="option-c"></span></label><br>
+                        <label><input type="radio" name="answer" value="d"> d) <span id="option-d"></span></label><br>
+                        <label><input type="radio" name="answer" value="e"> e) <span id="option-e"></span></label><br>
+                    </div>
+                </div>
+            </div>
+
+            <button id="next-button" disabled>Next</button>
+        </div>
+
+        <div id="results-section" class="hidden">
+            <h2>Test Results</h2>
+            <p id="score">You scored <span id="score"></span> out of 40.</p>
+            <button id="restart-button">Restart Test</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
