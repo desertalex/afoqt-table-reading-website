@@ -13,6 +13,7 @@ const nextButton = document.getElementById('next-button');
 const timerDisplay = document.getElementById('time');
 const resultsSection = document.getElementById('results-section');
 const scoreDisplay = document.getElementById('score');
+const timeLeftDisplay = document.getElementById('time-left');
 const restartButton = document.getElementById('restart-button');
 
 let questions = [];
@@ -122,10 +123,14 @@ function nextQuestion() {
     loadQuestion();
 }
 
-function updateTimer() {
+function timeAsString() {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
-    timerDisplay.textContent = `${String(minutes).padStart(1, '0')}:${String(seconds).padStart(2, '0')}`;
+    return `${String(minutes).padStart(1, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function updateTimer() {
+    timerDisplay.textContent = timeAsString();
     if (timeLeft <= 0) {
         endTest();
     }
@@ -141,6 +146,7 @@ function endTest() {
     testSection.classList.add('hidden');
     resultsSection.classList.remove('hidden');
     scoreDisplay.textContent = `You scored ${score} out of ${totalQuestions}`;
+    timeLeftDisplay.textContent = `You finished with ${timeAsString()} remaining`
 }
 
 function restartTest() {
