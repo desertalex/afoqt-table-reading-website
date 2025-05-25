@@ -25,10 +25,10 @@ let totalQuestions = 40;
 
 function generateTableData() {
     const data = [];
-    for (let i = -20; i <= 20; i++) {
+    for (let y = 20; y >= -20; y--) {
         const row = [];
-        for (let j = -20; j <= 20; j++) {
-            row.push(Math.floor(Math.random() * 100)); // Example random data
+        for (let x = -20; x <= 20; x++) {
+            row.push(x - y + 90); // Data to match table found at https://access.afpc.af.mil/pcsmdmz/Form%20T.HTML
         }
         data.push(row);
     }
@@ -37,20 +37,20 @@ function generateTableData() {
 
 function renderTable(data) {
     dataTable.innerHTML = ''; // Clear previous table
-    for (let i = 40; i >= 0; i--) {
+    for (let y = 0; y <= 40; y++) {
         const row = dataTable.insertRow();
-        if (i == 40) {
+        if (y == 0) {
             const yAxisHeader = document.createElement('th');
             yAxisHeader.rowSpan = 41;
             yAxisHeader.textContent = 'Y Axis';
             row.appendChild(yAxisHeader);
         }
         const headerCell = document.createElement('th');
-        headerCell.textContent = i - 20; // y-axis
+        headerCell.textContent = 20 - y; // y-axis
         row.appendChild(headerCell);
-        for (let j = 0; j <= 40; j++) {
+        for (let x = 0; x <= 40; x++) {
             const cell = row.insertCell();
-            cell.textContent = data[i][j];
+            cell.textContent = data[y][x];
         }
     }
     // Add x-axis labels
@@ -75,8 +75,16 @@ function generateQuestions(tableData) {
         const correctAnswer = tableData[y + 20][x + 20];
         const options = [correctAnswer];
 
-        while (options.length < 5) {
-            const randomValue = Math.floor(Math.random() * 100);
+        // Have several answers be close to the correct answer
+        if (correctAnswer != 130) {
+            options.push(correctAnswer + 1);
+        }
+        if (correctAnswer != 50) {
+            options.push(correctAnswer - 1);
+        }
+
+        while (options.length < 5) { // Fill remaining options
+            const randomValue = Math.floor(Math.random() * 130);
             if (!options.includes(randomValue)) {
                 options.push(randomValue);
             }
@@ -84,7 +92,7 @@ function generateQuestions(tableData) {
         options.sort(() => Math.random() - 0.5); // Shuffle options
 
         generatedQuestions.push({
-            question: `${i + 1}. What is the value at coordinate (x:${x}, y:${y})?`,
+            question: `${i + 1}. What is the value at coordinate (x:${x}, y:${-y})?`,
             options: options,
             correctAnswer: correctAnswer.toString()
         });
