@@ -35,6 +35,76 @@ body {
 
 #start-section {
     padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+.range-heading {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.range-title {
+    margin: 0;
+    font-size: 1.05em;
+    color: #1f2a37;
+}
+
+.info-button {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #9aa3b2;
+    background-color: transparent;
+    color: #546173;
+    font-size: 0.78em;
+    font-weight: 600;
+    cursor: pointer;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.info-button:hover,
+.info-button:focus-visible {
+    background-color: #f2f5f9;
+    color: #2f3a48;
+    border-color: #7d8898;
+}
+
+.info-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: min(92vw, 420px);
+    background-color: #1f2a37;
+    color: #fff;
+    font-size: 0.9em;
+    line-height: 1.45;
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transform: translateY(-4px);
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    z-index: 2;
+}
+
+.range-heading:hover .info-tooltip,
+.range-heading:focus-within .info-tooltip,
+.range-heading.tooltip-open .info-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    pointer-events: auto;
 }
 
 #start-section button {
@@ -50,6 +120,70 @@ body {
 
 #start-section button:hover {
     background-color: #0056b3;
+}
+
+#start-section .info-button {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid #c4cbd6;
+    background-color: transparent;
+    color: #7d8795;
+    font-size: 0.7em;
+    font-weight: 600;
+    line-height: 1;
+}
+
+#start-section .info-button:hover,
+#start-section .info-button:focus-visible {
+    background-color: transparent;
+    color: #5f6978;
+    border-color: #aeb7c4;
+}
+
+.range-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+    gap: 12px 16px;
+    width: min(100%, 360px);
+}
+
+.range-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.95em;
+}
+
+.range-group label {
+    font-weight: 600;
+    color: #333;
+}
+
+.range-group input {
+    padding: 10px 12px;
+    border: 1px solid #cfcfcf;
+    border-radius: 6px;
+    font-size: 1em;
+}
+
+.range-group input:focus {
+    outline: 2px solid rgba(0, 123, 255, 0.25);
+    border-color: #007bff;
+}
+
+.range-help {
+    width: min(100%, 360px);
+    margin: 0;
+    color: #444;
+    font-size: 0.92em;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.range-help.error {
+    color: #b00020;
 }
 
 #test-section {

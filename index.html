@@ -27,6 +27,33 @@
     </a>
     <div class="container">
         <div id="start-section">
+            <div class="range-heading">
+                <h2 class="range-title">Range Settings</h2>
+                <button
+                    id="range-info-button"
+                    class="info-button"
+                    type="button"
+                    aria-label="Show range settings help"
+                    aria-expanded="false"
+                    aria-controls="range-info-tooltip"
+                >
+                    i
+                </button>
+                <div id="range-info-tooltip" class="info-tooltip" role="tooltip">
+                    Adjust these values to match the dimensions of your specific study guides or practice materials. The defaults of 20 are set to match the practice test found at https://access.afpc.af.mil/pcsmdmz/Form%20T.HTML
+                </div>
+            </div>
+            <div class="range-controls" aria-label="Table range controls">
+                <div class="range-group">
+                    <label for="x-range">X-Axis Max Value</label>
+                    <input id="x-range" type="number" value="20" min="1" max="40" step="1" aria-describedby="range-help">
+                </div>
+                <div class="range-group">
+                    <label for="y-range">Y-Axis Max Value</label>
+                    <input id="y-range" type="number" value="20" min="1" max="40" step="1" aria-describedby="range-help">
+                </div>
+            </div>
+            <p id="range-help" class="range-help hidden" aria-live="polite"></p>
             <button id="start-button">Start Test</button>
         </div>
 

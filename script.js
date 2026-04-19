@@ -1,7 +1,14 @@
 const startButton = document.getElementById('start-button');
 const startSection = document.getElementById('start-section');
+const xRangeInput = document.getElementById('x-range');
+const yRangeInput = document.getElementById('y-range');
+const rangeInfoButton = document.getElementById('range-info-button');
+const rangeInfoTooltip = document.getElementById('range-info-tooltip');
+const rangeHelp = document.getElementById('range-help');
 const testSection = document.getElementById('test-section');
 const dataTable = document.getElementById('data-table').getElementsByTagName('tbody')[0];
+const xAxisHeader = document.getElementById('x-axis-header');
+const xAxisLabel = document.getElementById('x-axis-label');
 const questionText = document.getElementById('question-text');
 const optionA = document.getElementById('option-a');
 const optionB = document.getElementById('option-b');
@@ -23,11 +30,81 @@ let timeLeft = 420; // 7 minutes in seconds
 let timerInterval;
 let totalQuestions = 40;
 
-function generateTableData() {
+function parseAxisValue(input) {
+    if (input.value.trim() === '') {
+        return Number.NaN;
+    }
+
+    return Number.parseInt(input.value, 10);
+}
+
+function sanitizeAxisInput(input) {
+    input.value = input.value.replace(/\D/g, '').slice(0, 2);
+}
+
+function getAxisValidationMessage(xRange, yRange) {
+    if ([xRange, yRange].some(Number.isNaN)) {
+        return 'Enter whole numbers for both axis ranges.';
+    }
+
+    if (xRange < 1 || yRange < 1) {
+        return 'Axis ranges must be between 1 and 40.';
+    }
+
+    if (xRange > 40 || yRange > 40) {
+        return 'Axis ranges must be 40 or less.';
+    }
+
+    return '';
+}
+
+function getAxisHelperMessage(xRange, yRange) {
+    return `X-Axis from -${xRange} to ${xRange} ----- Y-Axis from -${yRange} to ${yRange}.`;
+}
+
+function updateRangeHelp(message, isError = false) {
+    if (message) {
+        rangeHelp.textContent = message;
+        rangeHelp.classList.remove('hidden');
+        rangeHelp.classList.toggle('error', isError);
+    } else {
+        rangeHelp.textContent = '';
+        rangeHelp.classList.add('hidden');
+        rangeHelp.classList.remove('error');
+    }
+}
+
+function getAxisValues() {
+    const xRange = parseAxisValue(xRangeInput);
+    const yRange = parseAxisValue(yRangeInput);
+
+    const validationMessage = getAxisValidationMessage(xRange, yRange);
+    if (validationMessage) {
+        return { error: validationMessage };
+    }
+
+    return {
+        xValues: buildAxisValues(-xRange, xRange),
+        yValues: buildAxisValues(yRange, -yRange)
+    };
+}
+
+function buildAxisValues(start, end) {
+    const values = [];
+    const step = start <= end ? 1 : -1;
+
+    for (let value = start; value !== end + step; value += step) {
+        values.push(value);
+    }
+
+    return values;
+}
+
+function generateTableData(axisValues) {
     const data = [];
-    for (let y = 20; y >= -20; y--) {
+    for (const y of axisValues.yValues) {
         const row = [];
-        for (let x = -20; x <= 20; x++) {
+        for (const x of axisValues.xValues) {
             row.push(x - y + 90); // Data to match table found at https://access.afpc.af.mil/pcsmdmz/Form%20T.HTML
         }
         data.push(row);
@@ -35,44 +112,44 @@ function generateTableData() {
     return data;
 }
 
-function renderTable(data) {
+function renderTable(data, axisValues) {
     dataTable.innerHTML = ''; // Clear previous table
-    for (let y = 0; y <= 40; y++) {
+    xAxisHeader.innerHTML = '';
+    xAxisLabel.colSpan = axisValues.xValues.length;
+    xAxisHeader.innerHTML = '<th></th><th></th>';
+
+    for (let y = 0; y < axisValues.yValues.length; y++) {
         const row = dataTable.insertRow();
         if (y == 0) {
             const yAxisHeader = document.createElement('th');
-            yAxisHeader.rowSpan = 41;
+            yAxisHeader.rowSpan = axisValues.yValues.length;
             yAxisHeader.textContent = 'Y Axis';
             row.appendChild(yAxisHeader);
         }
         const headerCell = document.createElement('th');
-        headerCell.textContent = 20 - y; // y-axis
+        headerCell.textContent = axisValues.yValues[y];
         row.appendChild(headerCell);
-        for (let x = 0; x <= 40; x++) {
+        for (let x = 0; x < axisValues.xValues.length; x++) {
             const cell = row.insertCell();
             cell.textContent = data[y][x];
         }
     }
     // Add x-axis labels
-    const headerRow = document.getElementById('x-axis-header');
-    headerRow.innerHTML = '';
-    const emptyHeaderCells = document.createElement('th');
-    emptyHeaderCells.colSpan = 2;
-    headerRow.appendChild(emptyHeaderCells);
-    headerRow.appendChild(emptyHeaderCells);
-    for (let i = -20; i <= 20; i++) {
+    for (const value of axisValues.xValues) {
         const th = document.createElement('th');
-        th.textContent = i;
-        headerRow.appendChild(th);
+        th.textContent = value;
+        xAxisHeader.appendChild(th);
     }
 }
 
-function generateQuestions(tableData) {
+function generateQuestions(tableData, axisValues) {
     const generatedQuestions = [];
     for (let i = 0; i < totalQuestions; i++) {
-        const x = Math.floor(Math.random() * 40) - 20;
-        const y = Math.floor(Math.random() * 40) - 20;
-        const correctAnswer = tableData[y + 20][x + 20];
+        const xIndex = Math.floor(Math.random() * axisValues.xValues.length);
+        const yIndex = Math.floor(Math.random() * axisValues.yValues.length);
+        const x = axisValues.xValues[xIndex];
+        const y = axisValues.yValues[yIndex];
+        const correctAnswer = tableData[yIndex][xIndex];
         const options = [correctAnswer];
 
         // Have several answers be close to the correct answer
@@ -84,7 +161,9 @@ function generateQuestions(tableData) {
         }
 
         while (options.length < 5) { // Fill remaining options
-            const randomValue = Math.floor(Math.random() * 130);
+            const min = 90 - (parseAxisValue(xRangeInput) + parseAxisValue(yRangeInput));
+            const max = 90 + (parseAxisValue(xRangeInput) + parseAxisValue(yRangeInput));
+            const randomValue = Math.floor(Math.random() * (max - min + 1)) + min;
             if (!options.includes(randomValue)) {
                 options.push(randomValue);
             }
@@ -92,7 +171,7 @@ function generateQuestions(tableData) {
         options.sort(() => Math.random() - 0.5); // Shuffle options
 
         generatedQuestions.push({
-            question: `${i + 1}. What is the value at coordinate (x:${x}, y:${-y})?`,
+            question: `${i + 1}. What is the value at coordinate (x:${x}, y:${y})?`,
             options: options,
             correctAnswer: correctAnswer.toString()
         });
@@ -154,7 +233,7 @@ function endTest() {
     testSection.classList.add('hidden');
     resultsSection.classList.remove('hidden');
     scoreDisplay.textContent = `You scored ${score} out of ${totalQuestions}`;
-    timeLeftDisplay.textContent = `You finished with ${timeAsString()} remaining`
+    timeLeftDisplay.textContent = `You finished with ${timeAsString()} remaining`;
 }
 
 function restartTest() {
@@ -165,17 +244,109 @@ function restartTest() {
     score = 0;
     timeLeft = 420;
     timerDisplay.textContent = '7:00';
+    updateRangeHelp('');
+}
+
+function validateRangeInputs() {
+    sanitizeAxisInput(xRangeInput);
+    sanitizeAxisInput(yRangeInput);
+
+    const xRange = parseAxisValue(xRangeInput);
+    const yRange = parseAxisValue(yRangeInput);
+    const validationMessage = getAxisValidationMessage(xRange, yRange);
+
+    if (validationMessage) {
+        updateRangeHelp(validationMessage, true);
+        return;
+    }
+
+    updateRangeHelp(getAxisHelperMessage(xRange, yRange));
+}
+
+function setInfoTooltipState(isOpen) {
+    if (!rangeInfoButton || !rangeInfoTooltip) {
+        return;
+    }
+
+    const rangeHeading = rangeInfoButton.parentElement;
+    if (!rangeHeading) {
+        return;
+    }
+
+    rangeInfoButton.setAttribute('aria-expanded', String(isOpen));
+    rangeHeading.classList.toggle('tooltip-open', isOpen);
 }
 
 startButton.addEventListener('click', () => {
+    validateRangeInputs();
+
+    const axisValues = getAxisValues();
+    if (axisValues.error) {
+        return;
+    }
+
     startSection.classList.add('hidden');
     testSection.classList.remove('hidden');
-    const tableData = generateTableData();
-    renderTable(tableData);
-    questions = generateQuestions(tableData);
+
+    const tableData = generateTableData(axisValues);
+    renderTable(tableData, axisValues);
+    questions = generateQuestions(tableData, axisValues);
     loadQuestion();
     startTimer();
 });
+
+[xRangeInput, yRangeInput].forEach(input => {
+    input.addEventListener('input', validateRangeInputs);
+    input.addEventListener('blur', validateRangeInputs);
+    input.addEventListener('keydown', event => {
+        const allowedKeys = [
+            'Backspace',
+            'Delete',
+            'ArrowLeft',
+            'ArrowRight',
+            'ArrowUp',
+            'ArrowDown',
+            'Tab',
+            'Home',
+            'End'
+        ];
+
+        if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) {
+            return;
+        }
+
+        if (!/\d/.test(event.key)) {
+            event.preventDefault();
+        }
+    });
+
+    input.addEventListener('paste', event => {
+        const pastedText = event.clipboardData.getData('text');
+        if (/\D/.test(pastedText)) {
+            event.preventDefault();
+        }
+    });
+});
+
+if (rangeInfoButton && rangeInfoTooltip) {
+    rangeInfoButton.addEventListener('click', event => {
+        event.stopPropagation();
+        const isOpen = rangeInfoButton.getAttribute('aria-expanded') === 'true';
+        setInfoTooltipState(!isOpen);
+    });
+
+    document.addEventListener('click', event => {
+        if (!rangeInfoButton.parentElement.contains(event.target)) {
+            setInfoTooltipState(false);
+        }
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            setInfoTooltipState(false);
+        }
+    });
+}
 
 answerInputs.forEach(input => {
     input.addEventListener('change', checkAnswer);
@@ -183,3 +354,5 @@ answerInputs.forEach(input => {
 
 nextButton.addEventListener('click', nextQuestion);
 restartButton.addEventListener('click', restartTest);
+
+validateRangeInputs();
